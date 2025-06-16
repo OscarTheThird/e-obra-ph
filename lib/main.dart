@@ -6,6 +6,7 @@ import 'firebase_options.dart'; // Import the Firebase options
 import 'services/auth_service.dart';
 import 'services/firestore_service.dart';
 import 'screens/auth/login_screen.dart';
+import 'screens/startup_screen.dart'; // Add this import
 import 'screens/customer/customer_home_screen.dart';
 import 'screens/customer/search_screen.dart';
 import 'screens/customer/customer_profile_screen.dart';
@@ -14,6 +15,7 @@ import 'screens/artist/artist_home_screen.dart';
 import 'screens/artist/create_post_screen.dart';
 import 'screens/artist/artist_profile_screen.dart';
 import 'screens/messaging/chat_screen.dart';
+import '/models/edit_artwork_model.dart';
 
 void main() async {
   print("🚀 Starting ArtMatch App...");
@@ -107,7 +109,7 @@ class ArtMatchApp extends StatelessWidget {
 
   GoRouter _createRouter(AuthService authService) {
     return GoRouter(
-      initialLocation: '/login',
+      initialLocation: '/startup', // Changed from '/login' to '/startup'
       redirect: (context, state) {
         final isLoggedIn = authService.currentUser != null;
         final currentLocation = state.uri.toString();
@@ -117,28 +119,44 @@ class ArtMatchApp extends StatelessWidget {
         print("   Is logged in: $isLoggedIn");
         print("   User type: ${authService.currentUserModel?.userType}");
         
-        // If user is not logged in and not on login screen, redirect to login
-        if (!isLoggedIn && currentLocation != '/login') {
-          print("   ➡️ Redirecting to login (not authenticated)");
-          return '/login';
+        // Don't redirect if on startup screen - let it handle its own navigation
+        if (currentLocation == '/startup') {
+          print("   ✅ On startup screen, no redirect needed");
+          return null;
         }
         
-        // If user is logged in and on login screen, redirect based on user type
-        if (isLoggedIn && currentLocation == '/login') {
+        // If user is logged in, redirect based on user type (from any screen except startup)
+        if (isLoggedIn) {
           final userType = authService.currentUserModel?.userType;
-          if (userType == 'customer') {
+          if (userType == 'customer' && !currentLocation.startsWith('/customer')) {
             print("   ➡️ Redirecting to customer home");
             return '/customer/home';
-          } else if (userType == 'artist') {
+          } else if (userType == 'artist' && !currentLocation.startsWith('/artist')) {
             print("   ➡️ Redirecting to artist home");
             return '/artist/home';
           }
+        }
+        
+        // If user is not logged in and trying to access protected routes, redirect to login
+        if (!isLoggedIn && 
+            currentLocation != '/login' && 
+            currentLocation != '/startup') {
+          print("   ➡️ Redirecting to login (not authenticated)");
+          return '/login';
         }
         
         print("   ✅ No redirect needed");
         return null; // No redirect needed
       },
       routes: [
+        // Add startup screen route
+        GoRoute(
+          path: '/startup',
+          builder: (context, state) {
+            print("📱 Building StartupScreen");
+            return const StartupScreen();
+          },
+        ),
         GoRoute(
           path: '/login',
           builder: (context, state) {
@@ -194,6 +212,14 @@ class ArtMatchApp extends StatelessWidget {
             final artistId = state.pathParameters['artistId']!;
             print("📱 Building ArtistProfileViewScreen for artist: $artistId");
             return ArtistProfileViewScreen(artistId: artistId);
+          },
+        ),
+        GoRoute(
+          path: '/artist/edit/:artworkId',
+          name: 'edit-artwork',
+          builder: (context, state) {
+            final artworkId = state.pathParameters['artworkId']!;
+            return EditArtworkScreen(artworkId: artworkId);
           },
         ),
         GoRoute(

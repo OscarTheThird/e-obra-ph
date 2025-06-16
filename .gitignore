@@ -45,5 +45,3 @@ app.*.map.json
 /android/app/release
 
 
-# Hide Cloudinary credentials
-lib/config/cloudinary_config.dart
