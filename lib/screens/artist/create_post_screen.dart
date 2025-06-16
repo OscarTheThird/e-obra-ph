@@ -7,7 +7,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:io';
 import 'dart:typed_data';
-import 'dart:html' as html;
+// Conditional import for web-only functionality
+import 'dart:html' as html show FileUploadInputElement, FileReader;
 import '../../services/auth_service.dart';
 import '../../services/firestore_service.dart';
 import '../../services/cloudinary_service.dart';
@@ -538,78 +539,11 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
     try {
       if (kIsWeb) {
-        // Web-specific image picking using html.FileUploadInputElement
-        final html.FileUploadInputElement uploadInput = html.FileUploadInputElement();
-        uploadInput.accept = 'image/*';
-        uploadInput.click();
-
-        uploadInput.onChange.listen((e) async {
-          final files = uploadInput.files;
-          if (files!.isEmpty) return;
-
-          final file = files[0];
-          
-          // Check file size (max 10MB)
-          if (file.size > 10 * 1024 * 1024) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Image size must be less than 10MB'),
-                backgroundColor: Colors.red,
-              ),
-            );
-            return;
-          }
-
-          // Check file type
-          if (!file.type.startsWith('image/')) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Please select a valid image file'),
-                backgroundColor: Colors.red,
-              ),
-            );
-            return;
-          }
-
-          final reader = html.FileReader();
-          reader.readAsArrayBuffer(file);
-          reader.onLoadEnd.listen((e) {
-            final bytes = reader.result as List<int>;
-            setState(() {
-              _selectedImages.add(Uint8List.fromList(bytes));
-              _imageNames.add(file.name);
-            });
-          });
-        });
+        // Web-specific image picking using conditional import
+        await _pickImageWeb();
       } else {
         // Mobile/Desktop image picking using image_picker
-        final picker = ImagePicker();
-        final pickedFile = await picker.pickImage(
-          source: ImageSource.gallery,
-          maxWidth: 1920,
-          maxHeight: 1920,
-          imageQuality: 85,
-        );
-        
-        if (pickedFile != null) {
-          final imageFile = File(pickedFile.path);
-          
-          // Check file size (max 10MB)
-          final fileSize = await imageFile.length();
-          if (fileSize > 10 * 1024 * 1024) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Image size must be less than 10MB'),
-                backgroundColor: Colors.red,
-              ),
-            );
-            return;
-          }
-
-          setState(() {
-            _selectedImages.add(imageFile);
-          });
-        }
+        await _pickImageMobile();
       }
     } catch (e) {
       print('Error picking image: $e');
@@ -619,6 +553,82 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           backgroundColor: Colors.red,
         ),
       );
+    }
+  }
+
+  Future<void> _pickImageWeb() async {
+    // This method will only be called on web platforms
+    final uploadInput = html.FileUploadInputElement();
+    uploadInput.accept = 'image/*';
+    uploadInput.click();
+
+    uploadInput.onChange.listen((e) async {
+      final files = uploadInput.files;
+      if (files!.isEmpty) return;
+
+      final file = files[0];
+      
+      // Check file size (max 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Image size must be less than 10MB'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      // Check file type
+      if (!file.type.startsWith('image/')) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please select a valid image file'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      final reader = html.FileReader();
+      reader.readAsArrayBuffer(file);
+      reader.onLoadEnd.listen((e) {
+        final bytes = reader.result as List<int>;
+        setState(() {
+          _selectedImages.add(Uint8List.fromList(bytes));
+          _imageNames.add(file.name);
+        });
+      });
+    });
+  }
+
+  Future<void> _pickImageMobile() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1920,
+      maxHeight: 1920,
+      imageQuality: 85,
+    );
+    
+    if (pickedFile != null) {
+      final imageFile = File(pickedFile.path);
+      
+      // Check file size (max 10MB)
+      final fileSize = await imageFile.length();
+      if (fileSize > 10 * 1024 * 1024) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Image size must be less than 10MB'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      setState(() {
+        _selectedImages.add(imageFile);
+      });
     }
   }
 
