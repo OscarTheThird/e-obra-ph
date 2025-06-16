@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "165426111304",
+    "project_id": "e-obraph",
+    "storage_bucket": "e-obraph.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:165426111304:android:108fd46bcae6c816f9097d",
+        "android_client_info": {
+          "package_name": "com.example.e_obra_ph"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCEx1mM1_JfaT9hiKDmd4Q4tVQNZj3Ntmg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
