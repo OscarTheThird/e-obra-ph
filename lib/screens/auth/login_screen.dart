@@ -185,7 +185,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              _isLogin ? 'Welcome Back!' : 'Join E-Obra.PH',
+              _isLogin ? 'Welcome Back!' : 'Join e-Obra.PH',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.bold,
                 color: primaryPurple,
@@ -265,7 +265,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
             if (!_isLogin) ...[
               _buildTextField(
                 controller: _locationController,
-                label: 'Location (Optional)',
+                label: 'Location',
                 icon: Icons.location_on_outlined,
               ),
               const SizedBox(height: 20),

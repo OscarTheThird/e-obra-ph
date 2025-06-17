@@ -193,7 +193,7 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> with Tick
                     'My Profile',
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 20,
+                      fontSize: 10,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
